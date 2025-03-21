@@ -29,8 +29,13 @@ export default function SignIn() {
         <Center gap='$2'>
           <Heading color='$gray100'>Acesse a conta</Heading>
 
-          <Input placeholder='E-mail' />
-          <Input placeholder='Senha' />
+          <Input
+            placeholder='E-mail'
+            keyboardType='email-address'
+            autoCapitalize='none'
+          />
+
+          <Input placeholder='Senha' secureTextEntry />
         </Center>
       </VStack>
     </VStack>
