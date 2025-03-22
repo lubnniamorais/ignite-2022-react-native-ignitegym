@@ -4,6 +4,7 @@ import BackgroundImg from '@assets/images/background.png';
 
 import Logo from '@assets/images/logo.svg';
 import { Input } from '@components/Input';
+import { Button } from '@components/Button';
 
 export default function SignIn() {
   return (
@@ -36,6 +37,8 @@ export default function SignIn() {
           />
 
           <Input placeholder='Senha' secureTextEntry />
+
+          <Button title='Acessar' isLoading />
         </Center>
       </VStack>
     </VStack>
