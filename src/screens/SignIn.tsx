@@ -1,8 +1,8 @@
 import { Center, Heading, Image, Text, VStack } from '@gluestack-ui/themed';
 
-import BackgroundImg from '@assets/images/background.png';
+import BackgroundImg from '@assets/background.png';
 
-import Logo from '@assets/images/logo.svg';
+import Logo from '@assets/logo.svg';
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
 
@@ -12,7 +12,7 @@ export default function SignIn() {
       <Image
         w='$full'
         h={624}
-        src={BackgroundImg}
+        source={BackgroundImg}
         alt='Pessoas treinando'
         defaultSource={BackgroundImg}
         position='absolute'
