@@ -2,6 +2,7 @@ import {
   createBottomTabNavigator,
   type BottomTabNavigationProp,
 } from '@react-navigation/bottom-tabs';
+import { Platform } from 'react-native';
 
 import { gluestackUIConfig } from '../../config/gluestack-ui.config';
 
@@ -28,10 +29,24 @@ const { Navigator, Screen } = createBottomTabNavigator<AppRoutes>();
 export function AppRoutes() {
   const { tokens } = gluestackUIConfig;
 
-  const iconSize = tokens.space[6];
+  const iconSize = tokens.space['6'];
 
   return (
-    <Navigator screenOptions={{ headerShown: false, tabBarShowLabel: false }}>
+    <Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: tokens.colors.green500,
+        tabBarInactiveTintColor: tokens.colors.gray200,
+        tabBarStyle: {
+          backgroundColor: tokens.colors.gray600,
+          borderTopWidth: 0,
+          height: Platform.OS === 'android' ? 'auto' : 96,
+          paddingBottom: tokens.space[12],
+          paddingTop: tokens.space[3],
+        },
+      }}
+    >
       {/* A propriedade headerShown: false remove o cabeçalho das telas */}
       {/* A sequência disposta aqui irá influenciar em como o 
       menu aparecerá na aplicação */}
@@ -65,7 +80,17 @@ export function AppRoutes() {
         }}
       />
 
-      <Screen name='exercise' component={Exercise} />
+      <Screen
+        name='exercise'
+        component={Exercise}
+        options={{
+          tabBarButton: () => null,
+          tabBarItemStyle: {
+            display: 'none',
+            // faz com que o botão não apareça no menu, juntamente como tabBarButton
+          },
+        }}
+      />
     </Navigator>
   );
 }
