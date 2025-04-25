@@ -14,7 +14,7 @@ export function Routes() {
     // Essa box é para assegurar a cor de fundo da aplicação
     <Box flex={1} bg='$gray700'>
       <NavigationContainer theme={theme}>
-        <AppRoutes />
+        <AuthRoutes />
       </NavigationContainer>
     </Box>
   );
