@@ -16,12 +16,31 @@ import Logo from '@assets/logo.svg';
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
 
+type FormDataProps = {
+  name: string;
+  email: string;
+  password: string;
+  password_confirm: string;
+};
+
 export function SignUp() {
-  const { control } = useForm();
+  const { control, handleSubmit } = useForm<FormDataProps>();
 
   const navigation = useNavigation();
 
-  function handleSignUp() {}
+  function handleSignUp({
+    name,
+    email,
+    password,
+    password_confirm,
+  }: FormDataProps) {
+    console.log({
+      name,
+      email,
+      password,
+      password_confirm,
+    });
+  }
 
   function handleGoBack() {
     navigation.goBack();
@@ -102,11 +121,16 @@ export function SignUp() {
                   secureTextEntry
                   onChangeText={onChange}
                   value={value}
+                  onSubmitEditing={handleSubmit(handleSignUp)}
+                  returnKeyType='send'
                 />
               )}
             />
 
-            <Button title='Criar e acessar' onPress={handleSignUp} />
+            <Button
+              title='Criar e acessar'
+              onPress={handleSubmit(handleSignUp)}
+            />
           </Center>
 
           <Button
