@@ -4,9 +4,9 @@ import {
   Input as GluestackInput,
   InputField,
   FormControl,
+  FormControlError,
   FormControlErrorText,
 } from '@gluestack-ui/themed';
-import { FormControlError } from '@gluestack-ui/themed';
 
 type Props = ComponentProps<typeof InputField> & {
   errorMessage?: string | null;
