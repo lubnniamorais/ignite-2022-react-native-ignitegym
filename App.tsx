@@ -8,7 +8,7 @@ import { GluestackUIProvider } from '@gluestack-ui/themed';
 
 import { config } from './config/gluestack-ui.config';
 
-import { AuthContext } from '@contexts/AuthContext';
+import { AuthContextProvider } from '@contexts/AuthContext';
 
 import { Loading } from '@components/Loading';
 
@@ -26,16 +26,9 @@ export default function App() {
       />
       {/* O value é o valor que queremos compartilhar no contexto, ou seja, 
       com toda a aplicação */}
-      <AuthContext.Provider
-        value={{
-          id: '1',
-          name: 'Lubnnia',
-          email: 'lubnnia@example.com',
-          avatar: 'lubnnia.png',
-        }}
-      >
+      <AuthContextProvider>
         {fontsLoaded ? <Routes /> : <Loading />}
-      </AuthContext.Provider>
+      </AuthContextProvider>
     </GluestackUIProvider>
   );
 }
