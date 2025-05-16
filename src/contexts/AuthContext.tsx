@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext, useState } from 'react';
 
 import type { UserDTO } from '@dtos/UserDTO';
 
@@ -18,20 +18,18 @@ export const AuthContext = createContext<AuthContextDataProps>(
 // em outros componentes.
 
 export function AuthContextProvider({ children }: AuthContextProviderProps) {
+  const [user, setUser] = useState({
+    user: {
+      id: '1',
+      name: 'Lubnnia',
+      email: 'lubnnia@example.com',
+      avatar: 'lubnnia.png',
+    },
+  });
+
   return (
     /* O value é o valor que queremos compartilhar no contexto, ou seja, 
         com toda a aplicação */
-    <AuthContext.Provider
-      value={{
-        user: {
-          id: '1',
-          name: 'Lubnnia',
-          email: 'lubnnia@example.com',
-          avatar: 'lubnnia.png',
-        },
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={user}>{children}</AuthContext.Provider>
   );
 }
