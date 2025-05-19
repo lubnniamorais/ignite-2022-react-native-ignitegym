@@ -7,8 +7,10 @@ import {
   ScrollView,
 } from '@gluestack-ui/themed';
 import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
+
 import * as yup from 'yup';
+
+import { yupResolver } from '@hookform/resolvers/yup';
 
 import { useToast } from 'native-base';
 
