@@ -1,3 +1,4 @@
+import { Controller, useForm } from 'react-hook-form';
 import {
   Center,
   Heading,
@@ -6,6 +7,10 @@ import {
   VStack,
   ScrollView,
 } from '@gluestack-ui/themed';
+
+// import { useToast } from 'native-base';
+
+import { useToast, Toast } from '@/components/ui/toast';
 
 import * as yup from 'yup';
 
@@ -17,12 +22,13 @@ import type { AuthNavigatorRoutesProps } from '@routes/auth.routes';
 
 import { useAuth } from '@hooks/useAuth';
 
-import BackgroundImg from '@assets/background.png';
+import { AppError } from '@utils/AppError';
 
+import BackgroundImg from '@assets/background.png';
 import Logo from '@assets/logo.svg';
+
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
-import { Controller, useForm } from 'react-hook-form';
 
 type FormDataProps = {
   email: string;
@@ -42,6 +48,8 @@ export function SignIn() {
 
   const navigation = useNavigation<AuthNavigatorRoutesProps>();
 
+  const toast = useToast();
+
   const {
     control,
     handleSubmit,
@@ -55,7 +63,22 @@ export function SignIn() {
   }
 
   async function handleSignIn({ email, password }: FormDataProps) {
-    await signIn(email, password);
+    try {
+      await signIn(email, password);
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+
+      // Caso o erro não seja uma instância de AppError, exibe uma mensagem padrão
+      const title = isAppError
+        ? error.message
+        : 'Não foi possível acessar. Tente novamente mais tarde.';
+
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.500',
+      });
+    }
   }
 
   return (
