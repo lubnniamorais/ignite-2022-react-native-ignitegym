@@ -1,6 +1,8 @@
-import { createContext, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 
 import { api } from '@services/api';
+
+import { storageUserGet, storageUserSave } from '@storage/storageUser';
 
 import type { UserDTO } from '@dtos/UserDTO';
 
@@ -32,11 +34,27 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       // autenticado. O user é o estado que armazena as informações do usuário.
       if (data.user) {
         setUser(data.user);
+        storageUserSave(data.user);
       }
     } catch (error) {
       throw error;
     }
   }
+
+  async function loadUserData() {
+    const userLogged = await storageUserGet();
+
+    // Se o usuário estiver logado, atualiza o estado do usuário
+    // com as informações armazenadas no AsyncStorage
+    if (userLogged) {
+      setUser(userLogged);
+    }
+  }
+
+  useEffect(() => {
+    loadUserData();
+    // O loadUserData é uma função que carrega as informações do usuário
+  }, []);
 
   return (
     /* O value é o valor que queremos compartilhar no contexto, ou seja, 
