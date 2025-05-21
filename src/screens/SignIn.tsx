@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   Center,
@@ -8,9 +9,7 @@ import {
   ScrollView,
 } from '@gluestack-ui/themed';
 
-// import { useToast } from 'native-base';
-
-import { useToast, Toast } from '@/components/ui/toast';
+import { useToast } from 'native-base';
 
 import * as yup from 'yup';
 
@@ -44,6 +43,8 @@ const signInSchema = yup.object({
 });
 
 export function SignIn() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const { signIn } = useAuth();
 
   const navigation = useNavigation<AuthNavigatorRoutesProps>();
@@ -64,6 +65,7 @@ export function SignIn() {
 
   async function handleSignIn({ email, password }: FormDataProps) {
     try {
+      setIsLoading(true);
       await signIn(email, password);
     } catch (error) {
       const isAppError = error instanceof AppError;
@@ -72,6 +74,8 @@ export function SignIn() {
       const title = isAppError
         ? error.message
         : 'Não foi possível acessar. Tente novamente mais tarde.';
+
+      setIsLoading(false);
 
       toast.show({
         title,
@@ -137,7 +141,11 @@ export function SignIn() {
               )}
             />
 
-            <Button title='Acessar' onPress={handleSubmit(handleSignIn)} />
+            <Button
+              title='Acessar'
+              onPress={handleSubmit(handleSignIn)}
+              isLoading={isLoading}
+            />
           </Center>
 
           <Center flex={1} justifyContent='flex-end' mt='$4'>
