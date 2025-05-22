@@ -9,6 +9,7 @@ import type { UserDTO } from '@dtos/UserDTO';
 export type AuthContextDataProps = {
   user: UserDTO;
   signIn: (email: string, password: string) => Promise<void>;
+  isLoadingUserStorageData: boolean;
 };
 
 type AuthContextProviderProps = {
@@ -24,6 +25,8 @@ export const AuthContext = createContext<AuthContextDataProps>(
 
 export function AuthContextProvider({ children }: AuthContextProviderProps) {
   const [user, setUser] = useState<UserDTO>({} as UserDTO);
+  const [isLoadingUserStorageData, setIsLoadingUserStorageData] =
+    useState(true);
 
   async function signIn(email: string, password: string) {
     try {
@@ -42,12 +45,18 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   }
 
   async function loadUserData() {
-    const userLogged = await storageUserGet();
+    try {
+      const userLogged = await storageUserGet();
 
-    // Se o usuário estiver logado, atualiza o estado do usuário
-    // com as informações armazenadas no AsyncStorage
-    if (userLogged) {
-      setUser(userLogged);
+      // Se o usuário estiver logado, atualiza o estado do usuário
+      // com as informações armazenadas no AsyncStorage
+      if (userLogged) {
+        setUser(userLogged);
+      }
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoadingUserStorageData(false);
     }
   }
 
@@ -59,7 +68,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   return (
     /* O value é o valor que queremos compartilhar no contexto, ou seja, 
         com toda a aplicação */
-    <AuthContext.Provider value={{ user, signIn }}>
+    <AuthContext.Provider value={{ user, signIn, isLoadingUserStorageData }}>
       {children}
     </AuthContext.Provider>
   );
