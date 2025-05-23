@@ -2,13 +2,18 @@ import { createContext, useEffect, useState } from 'react';
 
 import { api } from '@services/api';
 
-import { storageUserGet, storageUserSave } from '@storage/storageUser';
+import {
+  storageUserGet,
+  storageUserRemove,
+  storageUserSave,
+} from '@storage/storageUser';
 
 import type { UserDTO } from '@dtos/UserDTO';
 
 export type AuthContextDataProps = {
   user: UserDTO;
   signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
   isLoadingUserStorageData: boolean;
 };
 
@@ -44,6 +49,26 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     }
   }
 
+  // O signOut é uma função que desloga o usuário. Ela atualiza o estado do
+  // usuário para um objeto vazio e remove as informações do usuário
+  // armazenadas no AsyncStorage.
+  async function signOut() {
+    try {
+      setIsLoadingUserStorageData(true);
+      setUser({} as UserDTO);
+      await storageUserRemove();
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoadingUserStorageData(false);
+      // O finally é um bloco que sempre será executado, independentemente
+      // de o try ou o catch serem executados. Ele é usado para garantir
+      // que o estado do carregamento seja atualizado corretamente.
+      // Isso é importante para evitar que a aplicação fique travada
+      // em um estado de carregamento infinito.
+    }
+  }
+
   async function loadUserData() {
     try {
       const userLogged = await storageUserGet();
@@ -68,7 +93,9 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   return (
     /* O value é o valor que queremos compartilhar no contexto, ou seja, 
         com toda a aplicação */
-    <AuthContext.Provider value={{ user, signIn, isLoadingUserStorageData }}>
+    <AuthContext.Provider
+      value={{ user, signIn, signOut, isLoadingUserStorageData }}
+    >
       {children}
     </AuthContext.Provider>
   );
