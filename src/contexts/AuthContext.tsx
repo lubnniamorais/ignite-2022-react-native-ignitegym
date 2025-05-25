@@ -2,7 +2,11 @@ import { createContext, useEffect, useState } from 'react';
 
 import { api } from '@services/api';
 
-import { storageAuthTokenSave } from '@storage/storageAuthToken';
+import {
+  storageAuthTokenSave,
+  storageAuthTokenGet,
+  storageAuthTokenRemove,
+} from '@storage/storageAuthToken';
 import {
   storageUserGet,
   storageUserRemove,
@@ -34,41 +38,46 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   const [isLoadingUserStorageData, setIsLoadingUserStorageData] =
     useState(true);
 
-  async function storageUserAndToken(userData: UserDTO, token: string) {
+  async function userAndTokenUpdate(userData: UserDTO, token: string) {
+    // O api é uma instância do Axios, que é uma biblioteca para fazer requisições HTTP.
+    // O defaults.headers.common['Authorization'] é um cabeçalho que
+    // é enviado em todas as requisições. O Bearer ${token} é um padrão de autenticação
+    // que usa um token de autenticação. O token é uma string que identifica o usuário
+    // e permite que ele acesse recursos protegidos.
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    setUser(userData);
+  }
+
+  async function storageUserAndTokenSave(userData: UserDTO, token: string) {
     try {
       setIsLoadingUserStorageData(true);
 
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // O api é uma instância do Axios, que é uma biblioteca para fazer requisições HTTP.
-      // O defaults.headers.common['Authorization'] é um cabeçalho que
-      // é enviado em todas as requisições. O Bearer ${token} é um padrão de autenticação
-      // que usa um token de autenticação. O token é uma string que identifica o usuário
-      // e permite que ele acesse recursos protegidos.
-
       await storageUserSave(userData);
       await storageAuthTokenSave(token);
-      setUser(userData);
+      // O storageUserAndTokenSave é uma função que armazena as informações
+      // do usuário e o token de autenticação no AsyncStorage. O AsyncStorage
+      // é uma biblioteca que permite armazenar dados de forma persistente
+      // no dispositivo do usuário.
     } catch (error) {
       throw error;
     } finally {
       setIsLoadingUserStorageData(false);
-      // O finally é um bloco que sempre será executado, independentemente
-      // de o try ou o catch serem executados. Ele é usado para garantir
-      // que o estado do carregamento seja atualizado corretamente.
-      // Isso é importante para evitar que a aplicação fique travada
-      // em um estado de carregamento infinito.
     }
   }
 
   async function signIn(email: string, password: string) {
     try {
-      const { data } = await api.post('/sessions', { email, password });
-
       // O data é a resposta da requisição, que contém as informações do usuário
       // autenticado. O setUser é uma função que atualiza o estado do usuário
       // autenticado. O user é o estado que armazena as informações do usuário.
+
+      const { data } = await api.post('/sessions', { email, password });
+
       if (data.user && data.token) {
-        storageUserAndToken(data.user, data.token);
+        await storageUserAndTokenSave(data.user, data.token);
+
+        userAndTokenUpdate(data.user, data.token);
         // O storageUserAndToken é uma função que armazena as informações
         // do usuário e o token de autenticação no AsyncStorage. O AsyncStorage
         // é uma biblioteca que permite armazenar dados de forma persistente
@@ -76,6 +85,8 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       }
     } catch (error) {
       throw error;
+    } finally {
+      setIsLoadingUserStorageData(false);
     }
   }
 
@@ -85,8 +96,10 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   async function signOut() {
     try {
       setIsLoadingUserStorageData(true);
+
       setUser({} as UserDTO);
       await storageUserRemove();
+      await storageAuthTokenRemove();
     } catch (error) {
       throw error;
     } finally {
@@ -101,12 +114,15 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
   async function loadUserData() {
     try {
+      setIsLoadingUserStorageData(true);
+
       const userLogged = await storageUserGet();
+      const token = await storageAuthTokenGet();
 
       // Se o usuário estiver logado, atualiza o estado do usuário
       // com as informações armazenadas no AsyncStorage
-      if (userLogged) {
-        setUser(userLogged);
+      if (token && userLogged) {
+        userAndTokenUpdate(userLogged, token);
       }
     } catch (error) {
       throw error;
