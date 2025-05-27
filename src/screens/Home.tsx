@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { VStack, HStack, Heading, Text } from '@gluestack-ui/themed';
 
 import { api } from '@services/api';
+import { AppError } from '@utils/AppError';
+import type { ExerciseDTO } from '@dtos/ExerciseDTO';
 
 import { useToast } from 'native-base';
 
@@ -12,20 +14,11 @@ import type { AppNavigatorRoutesProps } from '@routes/app.routes';
 import { HomeHeader } from '@components/HomeHeader';
 import { Group } from '@components/Group';
 import { ExerciseCard } from '@components/ExerciseCard';
-
-import { AppError } from '@utils/AppError';
+import { ItemClick } from 'native-base/lib/typescript/components/composites/Typeahead/useTypeahead/types';
 
 export function Home() {
-  const [exercises, setExercises] = useState([
-    'Puxada Frontal',
-    'Remada Curvada',
-    'Remada Unilateral',
-    'Levantamento Terra',
-    '3',
-    '4',
-    '5',
-  ]);
   const [groups, setGroups] = useState<string[]>([]);
+  const [exercises, setExercises] = useState<ExerciseDTO[]>([]);
   const [groupSelected, setGroupSelected] = useState('Costas');
 
   const toast = useToast();
@@ -54,9 +47,37 @@ export function Home() {
     }
   }
 
+  async function fetchExercisesByGroup() {
+    try {
+      const response = await api.get(`/exercises/bygroup/${groupSelected}`);
+      setExercises(response.data);
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : 'Não foi possível carregar os exercícios.';
+
+      toast.show({
+        title,
+        placement: 'top',
+        bg: '$red.500',
+      });
+    }
+  }
+
   useEffect(() => {
     fetchGroups();
   }, []);
+
+  // Toda vez que o grupo selecionado mudar, vamos buscar os exercícios desse grupo
+  // e atualizar o estado de exercises.
+  // useFocusEffect é usado para garantir que a função seja chamada quando a tela estiver em foco.
+  // Isso é útil para evitar chamadas desnecessárias quando a tela não está visível.
+  useFocusEffect(
+    useCallback(() => {
+      fetchExercisesByGroup();
+    }, [groupSelected])
+  );
 
   return (
     <VStack flex={1}>
@@ -93,9 +114,9 @@ export function Home() {
 
         <FlatList
           data={exercises}
-          keyExtractor={(item) => item}
-          renderItem={() => (
-            <ExerciseCard onPress={handleOpenExerciseDetails} />
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <ExerciseCard onPress={handleOpenExerciseDetails} data={item} />
           )}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
