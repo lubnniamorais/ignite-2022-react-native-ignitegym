@@ -28,6 +28,7 @@ type RouteParamsProps = {
 };
 
 export function Exercise() {
+  const [sendingRegister, setSendingRegister] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [exercise, setExercise] = useState<ExerciseDTO>({} as ExerciseDTO);
   const navigation = useNavigation<AppNavigatorRoutesProps>();
@@ -43,6 +44,7 @@ export function Exercise() {
   function handleGoBack() {
     navigation.goBack();
   }
+
   async function fetchExerciseDetails() {
     // Função para buscar detalhes do exercício usando o exerciseId
     try {
@@ -63,6 +65,40 @@ export function Exercise() {
       });
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  // Nessa função, estamos registrando o exercício no histórico. Pegamos o ID do exercício
+  // que foi passado como parâmetro na rota e fazemos uma requisição POST para a API.
+  async function handleExerciseHistoryRegister() {
+    try {
+      setSendingRegister(true);
+
+      await api.post('/history/', { exercise_id: exerciseId });
+      // console.log('resposta', response.data);
+
+      // console.log('Aqui');
+
+      // toast.show({
+      //   title: 'Parabéns! Exercício registrado no seu histórico.',
+      //   placement: 'top',
+      //   bg: '$green.500',
+      // });
+
+      navigation.navigate('history');
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : 'Não foi possível registrar o exercício.';
+
+      toast.show({
+        title,
+        placement: 'top',
+        bg: '$red.500',
+      });
+    } finally {
+      setSendingRegister(false);
     }
   }
 
@@ -141,7 +177,11 @@ export function Exercise() {
                 </HStack>
               </HStack>
 
-              <Button title='Marcar como realizado' />
+              <Button
+                title='Marcar como realizado'
+                isLoading={sendingRegister}
+                onPress={handleExerciseHistoryRegister}
+              />
             </Box>
           </VStack>
         )}
