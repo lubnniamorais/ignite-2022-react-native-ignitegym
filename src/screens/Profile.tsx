@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { Center, Heading, Text, VStack, useToast } from '@gluestack-ui/themed';
+import { Controller, useForm } from 'react-hook-form';
+import { useAuth } from '@hooks/useAuth';
+
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 
@@ -10,12 +13,27 @@ import { Input } from '@components/Input';
 import { Button } from '@components/Button';
 import { ToastMessage } from '@components/ToastMessage';
 
+type FormDataProps = {
+  name: string;
+  email: string;
+  password: string;
+  old_password: string;
+  confirm_password: string;
+};
+
 export function Profile() {
   const [userPhoto, setUserPhoto] = useState(
     'https:github.com/lubnniamorais.png'
   );
 
   const toast = useToast();
+  const { user } = useAuth();
+  const { control } = useForm<FormDataProps>({
+    defaultValues: {
+      name: user.name,
+      email: user.email,
+    },
+  });
 
   async function handleUserPhotoSelect() {
     try {
@@ -84,10 +102,36 @@ export function Profile() {
             </Text>
           </TouchableOpacity>
 
-          <Center w='$full' gap='$4'>
-            <Input placeholder='Nome' bg='$gray600' />
-            <Input value='lubnnia@email.com' bg='$gray600' isReadOnly />
-          </Center>
+          <Controller
+            control={control}
+            name='name'
+            render={({ field: { value, onChange } }) => (
+              <Input
+                placeholder='Nome'
+                bg='$gray600'
+                onChangeText={onChange}
+                value={value}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name='email'
+            render={({ field: { value, onChange } }) => (
+              <Input
+                placeholder='E-mail'
+                isReadOnly
+                bg='$gray600'
+                onChangeText={onChange}
+                value={value}
+              />
+            )}
+          />
+
+          {/* <Center w='$full' gap='$4'>
+            
+          </Center> */}
 
           <Heading
             alignSelf='flex-start'
