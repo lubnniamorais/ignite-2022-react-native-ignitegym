@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { Center, Heading, Text, VStack, useToast } from '@gluestack-ui/themed';
 import { Controller, useForm } from 'react-hook-form';
-import { useAuth } from '@hooks/useAuth';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
+import { useAuth } from '@hooks/useAuth';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 
@@ -21,6 +23,10 @@ type FormDataProps = {
   confirm_password: string;
 };
 
+const profileSchema = yup.object({
+  name: yup.string().required('Informe o nome.'),
+});
+
 export function Profile() {
   const [userPhoto, setUserPhoto] = useState(
     'https:github.com/lubnniamorais.png'
@@ -28,11 +34,17 @@ export function Profile() {
 
   const toast = useToast();
   const { user } = useAuth();
-  const { control } = useForm<FormDataProps>({
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormDataProps>({
     defaultValues: {
       name: user.name,
       email: user.email,
     },
+    resolver: yupResolver(profileSchema),
   });
 
   async function handleUserPhotoSelect() {
@@ -78,6 +90,11 @@ export function Profile() {
     }
   }
 
+  async function handleProfileUpdate() {
+    try {
+    } catch (error) {}
+  }
+
   return (
     <VStack flex={1}>
       <ScreenHeader title='Perfil' />
@@ -111,6 +128,7 @@ export function Profile() {
                 bg='$gray600'
                 onChangeText={onChange}
                 value={value}
+                errorMessage={errors.name?.message}
               />
             )}
           />
@@ -129,10 +147,6 @@ export function Profile() {
             )}
           />
 
-          {/* <Center w='$full' gap='$4'>
-            
-          </Center> */}
-
           <Heading
             alignSelf='flex-start'
             fontFamily='$heading'
@@ -145,15 +159,51 @@ export function Profile() {
           </Heading>
 
           <Center w='$full' gap='$4'>
-            <Input placeholder='Senha antiga' bg='$gray600' secureTextEntry />
-            <Input placeholder='Nova senha' bg='$gray600' secureTextEntry />
-            <Input
-              placeholder='Confirme a nova senha'
-              bg='$gray600'
-              secureTextEntry
+            <Controller
+              control={control}
+              name='old_password'
+              render={({ field: { onChange } }) => (
+                <Input
+                  placeholder='Senha antiga'
+                  bg='$gray600'
+                  secureTextEntry
+                  onChangeText={onChange}
+                />
+              )}
             />
 
-            <Button title='Atualizar' />
+            <Controller
+              control={control}
+              name='password'
+              render={({ field: { onChange } }) => (
+                <Input
+                  placeholder='Nova senha'
+                  bg='$gray600'
+                  secureTextEntry
+                  onChangeText={onChange}
+                  errorMessage={errors.password?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name='confirm_password'
+              render={({ field: { onChange } }) => (
+                <Input
+                  placeholder='Confirme a nova senha'
+                  bg='$gray600'
+                  secureTextEntry
+                  onChangeText={onChange}
+                  errorMessage={errors.confirm_password?.message}
+                />
+              )}
+            />
+
+            <Button
+              title='Atualizar'
+              onPress={handleSubmit(handleProfileUpdate)}
+            />
           </Center>
         </Center>
       </ScrollView>
