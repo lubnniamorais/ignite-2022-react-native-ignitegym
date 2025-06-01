@@ -23,8 +23,26 @@ type FormDataProps = {
   confirm_password: string;
 };
 
+// Para a validação da senha utilizamos o oneOf, onde a primeira posição do
+// array é o valor do campo 'password' e a segunda posição é null, que é o valor padrão do
+// campo 'confirm_password'.
 const profileSchema = yup.object({
   name: yup.string().required('Informe o nome.'),
+  password: yup
+    .string()
+    .min(6, 'A senha deve ter pelo menos 6 caracteres.')
+    .nullable()
+    .transform((value) => (!!value ? value : null)),
+  confirm_password: yup
+    .string()
+    .nullable()
+    .transform((value) => (!!value ? value : null))
+    .oneOf([yup.ref('password'), null], 'A confirmação de senha não confere.')
+    .when('password', {
+      is: (field: any) => field,
+      then: (schema) =>
+        schema.nullable().required('Informe a confirmação da senha.'),
+    }),
 });
 
 export function Profile() {
@@ -43,6 +61,9 @@ export function Profile() {
     defaultValues: {
       name: user.name,
       email: user.email,
+      password: '',
+      old_password: '',
+      confirm_password: '',
     },
     resolver: yupResolver(profileSchema),
   });
@@ -90,9 +111,8 @@ export function Profile() {
     }
   }
 
-  async function handleProfileUpdate() {
-    try {
-    } catch (error) {}
+  async function handleProfileUpdate(data: FormDataProps) {
+    console.log(data);
   }
 
   return (
