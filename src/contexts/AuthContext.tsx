@@ -18,6 +18,7 @@ import type { UserDTO } from '@dtos/UserDTO';
 export type AuthContextDataProps = {
   user: UserDTO;
   signIn: (email: string, password: string) => Promise<void>;
+  updateUserProfile: (userUpdated: UserDTO) => Promise<void>;
   signOut: () => Promise<void>;
   isLoadingUserStorageData: boolean;
 };
@@ -112,6 +113,17 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     }
   }
 
+  async function updateUserProfile(userUpdated: UserDTO) {
+    try {
+      setUser(userUpdated);
+      await storageUserSave(userUpdated);
+      // O updateUserProfile é uma função que atualiza as informações do usuário
+      // no estado e as armazena no AsyncStorage.
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async function loadUserData() {
     try {
       setIsLoadingUserStorageData(true);
@@ -140,7 +152,13 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     /* O value é o valor que queremos compartilhar no contexto, ou seja, 
         com toda a aplicação */
     <AuthContext.Provider
-      value={{ user, signIn, signOut, isLoadingUserStorageData }}
+      value={{
+        user,
+        signIn,
+        signOut,
+        updateUserProfile,
+        isLoadingUserStorageData,
+      }}
     >
       {children}
     </AuthContext.Provider>

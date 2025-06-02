@@ -23,10 +23,15 @@
         "useButtonType": "off"
       },
       "suspicious": {
-        "noArrayIndexKey": "info"
+        "noArrayIndexKey": "info",
+        "noThenProperty": "off"
       },
       "correctness": {
         "useExhaustiveDependencies": "warn"
+      },
+      "complexity": {
+        "noExtraBooleanCast": "off",
+        "noUselessCatch": "off"
       }
     }
   },
