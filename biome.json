@@ -24,7 +24,8 @@
       },
       "suspicious": {
         "noArrayIndexKey": "info",
-        "noThenProperty": "off"
+        "noThenProperty": "off",
+        "noExplicitAny": "warn"
       },
       "correctness": {
         "useExhaustiveDependencies": "warn"

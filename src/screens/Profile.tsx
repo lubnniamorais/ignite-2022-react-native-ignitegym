@@ -115,7 +115,32 @@ export function Profile() {
           });
         }
 
-        setUserPhoto(photoURI);
+        // Obtendo a extensão da imagem
+        const fileExtension = photoURI.split('.').pop();
+
+        // Usamos o nome do usuário para definir a imagem
+        const photoFile = {
+          name: `${user.name}.${fileExtension}`.toLowerCase(),
+          uri: photoURI,
+          type: `${photoSelected.assets[0].type}/${fileExtension}`,
+        } as any;
+
+        const userPhotoUploadForm = new FormData();
+
+        // O append() é para anexarmos as informações
+        userPhotoUploadForm.append('avatar', photoFile);
+
+        await api.patch('/users/avatar', userPhotoUploadForm, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        toast.show({
+          title: 'Foto atualizada com sucesso!',
+          placement: 'top',
+          bgColor: '$green.500',
+        });
       }
     } catch (error) {
       console.log(error);
