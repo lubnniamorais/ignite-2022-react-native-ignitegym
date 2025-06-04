@@ -11,6 +11,8 @@ import * as FileSystem from 'expo-file-system';
 
 import { useToast } from 'native-base';
 
+import defaultUserPhotoImg from '@assets/userPhotoDefault.png';
+
 import { ScreenHeader } from '@components/ScreenHeader';
 import { UserPhoto } from '@components/UserPhoto';
 import { Input } from '@components/Input';
@@ -130,11 +132,24 @@ export function Profile() {
         // O append() é para anexarmos as informações
         userPhotoUploadForm.append('avatar', photoFile);
 
-        await api.patch('/users/avatar', userPhotoUploadForm, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        const avatarUpdatedResponse = await api.patch(
+          '/users/avatar',
+          userPhotoUploadForm,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+
+        const userUpdated = user;
+        userUpdated.avatar = avatarUpdatedResponse.data.avatar;
+        // Pegando a nova foto do usuário do backend
+
+        await updateUserProfile(userUpdated);
+        // Setando a nova foto do usuário no contexto
+        // e atualizando o estado global
+        // do usuário logado
 
         toast.show({
           title: 'Foto atualizada com sucesso!',
@@ -190,7 +205,11 @@ export function Profile() {
       <ScrollView contentContainerStyle={{ paddingBottom: 36 }}>
         <Center mt='$6' px='$10'>
           <UserPhoto
-            source={{ uri: userPhoto }}
+            source={
+              user.avatar
+                ? { uri: `${api.defaults.baseURL}/avatar/${user.avatar}` }
+                : defaultUserPhotoImg
+            }
             alt='Foto do usuário'
             size='xl'
           />
