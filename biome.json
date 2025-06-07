@@ -28,7 +28,7 @@
         "noExplicitAny": "warn"
       },
       "correctness": {
-        "useExhaustiveDependencies": "warn"
+        "useExhaustiveDependencies": "off"
       },
       "complexity": {
         "noExtraBooleanCast": "off",

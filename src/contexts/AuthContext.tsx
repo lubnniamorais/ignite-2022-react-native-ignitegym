@@ -148,6 +148,14 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     // O loadUserData é uma função que carrega as informações do usuário
   }, []);
 
+  useEffect(() => {
+    const subscribe = api.registerInterceptTokenManager(signOut);
+
+    return () => {
+      subscribe();
+    };
+  }, [signOut]);
+
   return (
     /* O value é o valor que queremos compartilhar no contexto, ou seja, 
         com toda a aplicação */
