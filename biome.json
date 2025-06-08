@@ -32,7 +32,11 @@
       },
       "complexity": {
         "noExtraBooleanCast": "off",
-        "noUselessCatch": "off"
+        "noUselessCatch": "off",
+        "useOptionalChain": "off"
+      },
+      "style": {
+        "noUselessElse": "off"
       }
     }
   },

@@ -50,12 +50,16 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     setUser(userData);
   }
 
-  async function storageUserAndTokenSave(userData: UserDTO, token: string) {
+  async function storageUserAndTokenSave(
+    userData: UserDTO,
+    token: string,
+    refresh_token: string
+  ) {
     try {
       setIsLoadingUserStorageData(true);
 
       await storageUserSave(userData);
-      await storageAuthTokenSave(token);
+      await storageAuthTokenSave({ token, refresh_token });
       // O storageUserAndTokenSave é uma função que armazena as informações
       // do usuário e o token de autenticação no AsyncStorage. O AsyncStorage
       // é uma biblioteca que permite armazenar dados de forma persistente
@@ -75,8 +79,12 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
       const { data } = await api.post('/sessions', { email, password });
 
-      if (data.user && data.token) {
-        await storageUserAndTokenSave(data.user, data.token);
+      if (data.user && data.token && data.refresh_token) {
+        await storageUserAndTokenSave(
+          data.user,
+          data.token,
+          data.refresh_token
+        );
 
         userAndTokenUpdate(data.user, data.token);
         // O storageUserAndToken é uma função que armazena as informações
@@ -129,7 +137,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       setIsLoadingUserStorageData(true);
 
       const userLogged = await storageUserGet();
-      const token = await storageAuthTokenGet();
+      const { token } = await storageAuthTokenGet();
 
       // Se o usuário estiver logado, atualiza o estado do usuário
       // com as informações armazenadas no AsyncStorage
