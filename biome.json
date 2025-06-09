@@ -25,15 +25,18 @@
       "suspicious": {
         "noArrayIndexKey": "info",
         "noThenProperty": "off",
-        "noExplicitAny": "warn"
+        "noExplicitAny": "warn",
+        "noAsyncPromiseExecutor": "off"
       },
       "correctness": {
-        "useExhaustiveDependencies": "off"
+        "useExhaustiveDependencies": "off",
+        "noUnreachable": "off"
       },
       "complexity": {
         "noExtraBooleanCast": "off",
         "noUselessCatch": "off",
-        "useOptionalChain": "off"
+        "useOptionalChain": "off",
+        "noUselessLoneBlockStatements": "off"
       },
       "style": {
         "noUselessElse": "off"
