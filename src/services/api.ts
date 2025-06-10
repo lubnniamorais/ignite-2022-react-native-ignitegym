@@ -8,29 +8,27 @@ import {
 
 type SignOut = () => void;
 
-type APIInstanceProps = AxiosInstance & {
-  registerInterceptTokenManager: (signOut: SignOut) => () => void;
-};
-
-const api = axios.create({
-  // Aqui estamos definindo o endereço do servidor
-  baseURL: 'http://192.168.100.53:3333',
-}) as APIInstanceProps;
-
 type PromiseType = {
   onSuccess: (token: string) => void;
   onFailure: (error: AxiosError) => void;
 };
 
-const failedQueue: Array<PromiseType> = [];
+type APIInstanceProps = AxiosInstance & {
+  registerInterceptTokenManager: (signOut: SignOut) => () => void;
+};
+
+const api = axios.create({
+  baseURL: 'http://192.168.100.53:3333',
+}) as APIInstanceProps;
+
+let failedQueued: Array<PromiseType> = [];
 let isRefreshing = false;
 
-api.registerInterceptTokenManager = (signOut) => {
+api.registerInterceptTokenManager = (singOut) => {
   const interceptTokenManager = api.interceptors.response.use(
     (response) => response,
     async (requestError) => {
-      // Se o status é 401, significa que temos uma requisição não autorizada
-      if (requestError?.response?.status === 401) {
+      if (requestError.response?.status === 401) {
         if (
           requestError.response.data?.message === 'token.expired' ||
           requestError.response.data?.message === 'token.invalid'
@@ -38,19 +36,15 @@ api.registerInterceptTokenManager = (signOut) => {
           const { refresh_token } = await storageAuthTokenGet();
 
           if (!refresh_token) {
-            signOut();
+            singOut();
             return Promise.reject(requestError);
           }
 
-          // Aqui temos todas as configurações da requisição que foi feita
           const originalRequestConfig = requestError.config;
 
-          // Verifica se tá acontecendo a solicitação de um novo token.
-          // Dá primeira vez não irá entrar no IF, mas dá segunda requisição irá entrar.
-          // Este é o fluxo de adicionar requisições na fila
           if (isRefreshing) {
             return new Promise((resolve, reject) => {
-              failedQueue.push({
+              failedQueued.push({
                 onSuccess: (token: string) => {
                   originalRequestConfig.headers = {
                     Authorization: `Bearer ${token}`,
@@ -66,7 +60,6 @@ api.registerInterceptTokenManager = (signOut) => {
 
           isRefreshing = true;
 
-          // Buscando um novo token
           return new Promise(async (resolve, reject) => {
             try {
               const { data } = await api.post('/sessions/refresh-token', {
@@ -76,36 +69,54 @@ api.registerInterceptTokenManager = (signOut) => {
                 token: data.token,
                 refresh_token: data.refresh_token,
               });
+
+              if (originalRequestConfig.data) {
+                originalRequestConfig.data = JSON.parse(
+                  originalRequestConfig.data
+                );
+              }
+
+              originalRequestConfig.headers = {
+                Authorization: `Bearer ${data.token}`,
+              };
+              api.defaults.headers.common['Authorization'] =
+                `Bearer ${data.token}`;
+
+              failedQueued.forEach((request) => {
+                request.onSuccess(data.token);
+              });
+
+              console.log('TOKEN ATUALIZADO');
+
+              resolve(api(originalRequestConfig));
             } catch (error: any) {
-              failedQueue.forEach((request) => {
+              console.log(error);
+              failedQueued.forEach((request) => {
                 request.onFailure(error);
               });
 
-              signOut();
+              singOut();
               reject(error);
             } finally {
               isRefreshing = false;
-              failedQueue = [];
+              failedQueued = [];
             }
           });
         }
 
-        // Se não é token expirado ou token inválido, então vamos deslogar
-        signOut();
+        singOut();
       }
+
       if (requestError.response && requestError.response.data) {
         return Promise.reject(new AppError(requestError.response.data.message));
       } else {
-        return Promise.reject(
-          new AppError('Erro no servidor. Tente novamente mais tarde.')
-        );
+        return Promise.reject(requestError);
       }
     }
   );
 
   return () => {
     api.interceptors.response.eject(interceptTokenManager);
-    // Aqui estamos removendo o interceptor
   };
 };
 

@@ -36,7 +36,9 @@
         "noExtraBooleanCast": "off",
         "noUselessCatch": "off",
         "useOptionalChain": "off",
-        "noUselessLoneBlockStatements": "off"
+        "noUselessLoneBlockStatements": "off",
+        "noForEach": "off",
+        "useLiteralKeys": "off"
       },
       "style": {
         "noUselessElse": "off"
